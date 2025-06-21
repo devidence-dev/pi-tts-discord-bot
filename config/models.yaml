@@ -1,0 +1,21 @@
+models:
+  default: "tts_models/en/ljspeech/tacotron2-DDC"
+  
+  available:
+    # English models
+    en_fast: "tts_models/en/ljspeech/tacotron2-DDC"
+    en_quality: "tts_models/en/vctk/vits"
+    en_multi: "tts_models/multilingual/multi-dataset/xtts_v2"
+    
+    # Spanish models
+    es_fast: "tts_models/es/mai/tacotron2-DDC"
+    es_quality: "tts_models/es/css10/vits"
+    
+    # Multilingual
+    multilingual: "tts_models/multilingual/multi-dataset/xtts_v2"
+
+settings:
+  device: "auto"  # auto, cpu, cuda
+  cache_dir: "./.cache/tts"
+  audio_format: "wav"
+  sample_rate: 22050

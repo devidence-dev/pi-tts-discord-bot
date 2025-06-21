@@ -1,0 +1,15 @@
+services:
+  devcontainer:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ../:/workspace:cached
+      - tts_cache:/tmp/tts_cache
+    working_dir: /workspace
+    command: sleep infinity
+    environment:
+      - PYTHONPATH=/workspace
+
+volumes:
+  tts_cache:
