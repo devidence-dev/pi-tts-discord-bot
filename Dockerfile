@@ -5,6 +5,8 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     git \
     build-essential \
+    libffi-dev \
+    libsodium-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory

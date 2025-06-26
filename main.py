@@ -14,7 +14,7 @@ async def main() -> None:
     bot = TTSBot()
 
     # Load commands
-    await bot.load_extension("bot.commands")
+    bot.load_extension("bot.commands")
 
     # Get token from environment variable
     token = os.getenv("DISCORD_TOKEN")

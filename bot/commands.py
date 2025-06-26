@@ -32,36 +32,76 @@ class TTSCommands(commands.Cog):
     @commands.command(name="tts")
     async def text_to_speech(self, ctx, *, text: str):
         """Convert text to speech"""
+        print(f"DEBUG: TTS command received from user {ctx.author.id}: '{text}'")
+        
         if not self._is_authorized(ctx.author.id):
+            print(f"DEBUG: User {ctx.author.id} not authorized")
             await ctx.send("❌ You are not authorized to use this bot.")
             return
 
+        print(f"DEBUG: User authorized, checking voice channel")
         if not ctx.author.voice:
+            print(f"DEBUG: User not in voice channel")
             await ctx.send("You need to be in a voice channel!")
             return
 
         channel = ctx.author.voice.channel
+        print(f"DEBUG: User in voice channel: {channel.name}")
 
         if ctx.voice_client is None:
+            print(f"DEBUG: Bot not connected, connecting to voice channel")
             await channel.connect()
         elif ctx.voice_client.channel != channel:
+            print(f"DEBUG: Bot in different channel, moving")
             await ctx.voice_client.move_to(channel)
+
+        print(f"DEBUG: Bot connected to voice, starting TTS processing")
 
         await ctx.send(f"Converting to speech: `{text}`")
 
-        # Generate audio
-        audio_path = self.tts_engine.synthesize(text)
+        # Generate audio in a separate thread to avoid blocking
+        loop = asyncio.get_event_loop()
+        audio_path = await loop.run_in_executor(None, self.tts_engine.synthesize, text)
+        
+        print(f"DEBUG: Audio file generated at: {audio_path}")
+        
+        # Check if file exists and get size
+        import os
+        if os.path.exists(audio_path):
+            file_size = os.path.getsize(audio_path)
+            print(f"DEBUG: Audio file exists, size: {file_size} bytes")
+        else:
+            print(f"DEBUG: Audio file does not exist!")
+            await ctx.send("❌ Failed to generate audio file")
+            return
 
         # Play audio
-        audio_source = discord.FFmpegPCMAudio(audio_path)
-        ctx.voice_client.play(audio_source)
-
-        # Wait for playback to finish
-        while ctx.voice_client.is_playing():
-            await asyncio.sleep(1)
+        try:
+            audio_source = discord.FFmpegPCMAudio(audio_path)
+            print(f"DEBUG: Created FFmpegPCMAudio source")
+            
+            if ctx.voice_client:
+                print(f"DEBUG: Voice client exists, starting playback")
+                ctx.voice_client.play(audio_source)
+                print(f"DEBUG: Audio playback started")
+                
+                # Wait for playback to finish
+                while ctx.voice_client.is_playing():
+                    print(f"DEBUG: Audio is playing...")
+                    await asyncio.sleep(1)
+                    
+                print(f"DEBUG: Audio playback finished")
+            else:
+                print(f"DEBUG: No voice client available")
+                await ctx.send("❌ Not connected to voice channel")
+                
+        except Exception as e:
+            print(f"DEBUG: Error during audio playback: {e}")
+            await ctx.send(f"❌ Error playing audio: {e}")
 
         # Cleanup
         self.tts_engine.cleanup_file(audio_path)
+        print(f"DEBUG: Audio file cleaned up")
 
     @commands.command(name="join")
     async def join_voice(self, ctx):
@@ -95,5 +135,5 @@ class TTSCommands(commands.Cog):
             await ctx.send("Not connected to any voice channel!")
 
 
-async def setup(bot):
-    await bot.add_cog(TTSCommands(bot))
+def setup(bot):
+    bot.add_cog(TTSCommands(bot))

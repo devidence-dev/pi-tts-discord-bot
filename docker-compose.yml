@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   tts-bot:
     build: .
@@ -12,12 +10,6 @@ services:
       - tts_cache:/app/.cache
     networks:
       - bot_network
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-        reservations:
-          memory: 1G
 
 volumes:
   tts_cache:
